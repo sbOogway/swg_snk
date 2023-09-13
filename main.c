@@ -38,7 +38,7 @@ int main(int argc, char * argv []) {
 				map[j][i] = "|";
 				continue;
 					}
-			if (i == 0 || i == _height -1) {
+			if (i == 0 || i == _height-1) {
 				if (j == 0 || j == _width-1) {
 					map[j][i] = "+";
 					continue;
@@ -78,6 +78,7 @@ int main(int argc, char * argv []) {
 	_food.body = "*";
 
 	map[_food.loc.x][_food.loc.y] = _food.body;
+
 	// chatgpt shit
 	struct termios old_term, new_term;
     char key;
@@ -93,6 +94,7 @@ int main(int argc, char * argv []) {
     // Set file descriptor for standard input to non-blocking
     int flags = fcntl(STDIN_FILENO, F_GETFL);
     fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
+	// end chatgpt shit
 
 	// main loop
 	while (!stop) {	
@@ -105,72 +107,93 @@ int main(int argc, char * argv []) {
 			printf("%s", "\n");
 		}
 
+		// handles key events to move the snake
 		int bytes_read = read(STDIN_FILENO, &key, 1);
-
         if (bytes_read == 1) {
-            // Handle the key press
             printf("Key pressed: %c\n", key);
-
 			if (key == 'w') {_snake.direction = 8;}
 			if (key == 'a') {_snake.direction = 4;}
 			if (key == 's') {_snake.direction = 2;}
 			if (key == 'd') {_snake.direction = 6;}
 		}
 
-
-
+		// snake eats food
 		if (_snake.body_loc[0].x == _food.loc.x && _snake.body_loc[0].y == _food.loc.y) {
 			// map[_food.loc.x][_food.loc.y] = " ";
-			_food.loc.x = _snake.body_loc[0].x + 1; //1 + rand() % _width;
-			_food.loc.y = 1 + rand() % _height;
+			_food.loc.x = 1 + rand() % (_width -2);
+			_food.loc.y = 1 + rand() % (_height-2);
 			map[_food.loc.x][_food.loc.y] = _food.body;
 			_snake.length++;
+			_snake.body_loc[_snake.length-1].x = _snake.body_loc[_snake.length-2].x;
+			_snake.body_loc[_snake.length-1].y = _snake.body_loc[_snake.length-2].y;
 		}
 
-		for (int i = 1; i < _snake.length; i++) {
+		// update snake pieces: get the coordinates of the piece before (head is already updated)
+		for (int i = 1; i > _snake.length; i++) {
 			_snake.body_loc[i].x = _snake.body_loc[i-1].x;
 			_snake.body_loc[i].y = _snake.body_loc[i-1].y;
-		}
+		} 		
 
+		/*
+		  n 
+		o + e
+		  s  
+		*/
+
+		// the snakes changes direction to nord
 		if (_snake.direction == 8) {
-			map[_snake.body_loc[_snake.length-1].x][_snake.body_loc[_snake.length-1].y] = " ";
 			_snake.body_loc[0].y -= 1;
 		}
 
+		// the snakes changes direction to sud
 		if (_snake.direction == 2) {
-			map[_snake.body_loc[_snake.length-1].x][_snake.body_loc[_snake.length-1].y] = " ";
 			_snake.body_loc[0].y += 1;
 		}
 
+		// the snakes changes direction to ovest
 		if (_snake.direction == 4) {
-			map[_snake.body_loc[_snake.length-1].x][_snake.body_loc[_snake.length-1].y] = " ";
 			_snake.body_loc[0].x -= 1;
 		}
 
+		// the snakes changes direction to est
 		if (_snake.direction == 6) {
-			map[_snake.body_loc[_snake.length-1].x][_snake.body_loc[_snake.length-1].y] = " ";
 			_snake.body_loc[0].x += 1;
 		}
 
-		printf("head y -> %d\ntail y -> %d\nlength -> %d\n", _snake.body_loc[0].y, _snake.body_loc[_snake.length-1].y, _snake.length);
+		// checks if snake has hit wall
+		if (_snake.body_loc[0].x > _width -1 || _snake.body_loc[0].x < 0 || _snake.body_loc[0].y > _height -1 || _snake.body_loc[0].y < 0) {
+			printf("game over\n");
+			stop = 1;
+		}
+
+		printf("length -> %d\n", _snake.length);
 		printf("snake direction -> %d\n", _snake.direction);
 		
+		// wipe map from snake pieces
+		for (int i = 0; i < _height; i++) {
+			for (int j = 0; j < _width; j++) {
+				if (map[j][i] == _snake.body) {
+					map[j][i] = " ";
+				}
+			}
+		}
+
+
+		// update map with snake body
 		for (int i = 0; i < _snake.length; i++) {
 			// map[_snake.body_loc[i].x][_snake.body_loc[i].y] = _snake.body;
 			printf("%d pezzo. x -> %d, y -> %d\n", i, _snake.body_loc[i].x, _snake.body_loc[i].y);
+			map[_snake.body_loc[i].x][_snake.body_loc[i].y] = _snake.body;
 		}	
-		
-		
-		map[_snake.body_loc[0].x][_snake.body_loc[0].y] = _snake.body;
-		// map[_snake.body_loc[_snake.length-1].x][_snake.body_loc[_snake.length-1].y] = " ";
-		
+
+
+				
+		// map[_snake.body_loc[0].x][_snake.body_loc[0].y] = _snake.body;
+		// map[_snake.body_loc[_snake.length-1].x][_snake.body_loc[_snake.length-1].y] = " ";		
 		// _snake.length += 1;
 
-		usleep(250000); // 500000 half a sec
+		usleep(125000); // 500000 half a sec
 	}
-	//printf("%s", map[0][0]);
-
 	tcsetattr(STDIN_FILENO, TCSANOW, &old_term);
-
 	return 0;
 }
