@@ -32,7 +32,7 @@ int main(int argc, char * argv []) {
 		for (int j = 0; j < _width; j++) {
 			if (j == 0 || j == _width -1) {
 				if (i == 0 || i == _height-1 ) {
-					map[j][i] = "+";
+					map[j][i] = "#";
 					continue;
 				}
 				map[j][i] = "|";
@@ -40,10 +40,10 @@ int main(int argc, char * argv []) {
 					}
 			if (i == 0 || i == _height-1) {
 				if (j == 0 || j == _width-1) {
-					map[j][i] = "+";
+					map[j][i] = "#";
 					continue;
 				}
-				map[j][i] = "-";
+				map[j][i] = "=";
 				continue;
 				}
 			map[j][i] = " ";
@@ -54,14 +54,14 @@ int main(int argc, char * argv []) {
 			int length;
 			char * body;
 			int direction;
-			pos body_loc[max_snake_length];
+			pos body_loc[3200];//max_snake_length];
 	} snake;
 	snake _snake;
 	_snake.body_loc[0].x = _width  / 2;
 	_snake.body_loc[0].y = _height / 2;
 	_snake.length = 1;
 	_snake.direction = 0; // 8 up, 2 down, 6 right, 4 left, 0 stop
-	_snake.body = "@";
+	_snake.body = "🀫";
 	// _snake.body_loc = pos[max_snake_length];
 	
 	// adding snake to map
@@ -73,9 +73,9 @@ int main(int argc, char * argv []) {
 			char * body;
 	} food;
 	food _food;
-	_food.loc.x = 41; //1 + rand() % _width;
-	_food.loc.y = 24;  + rand() % _height;
-	_food.body = "*";
+	_food.loc.x = 1 + rand() % _width;
+	_food.loc.y = 1 + rand() % _height;
+	_food.body = "₿";
 
 	map[_food.loc.x][_food.loc.y] = _food.body;
 
@@ -99,6 +99,7 @@ int main(int argc, char * argv []) {
 	// main loop
 	while (!stop) {	
 		system("clear");
+		map[0][0] = "#";
 		// render the full scene
 		for (int i = 0; i < _height; i++) {
 			for (int j = 0; j < _width; j++) {
@@ -115,24 +116,13 @@ int main(int argc, char * argv []) {
 			if (key == 'a') {_snake.direction = 4;}
 			if (key == 's') {_snake.direction = 2;}
 			if (key == 'd') {_snake.direction = 6;}
-		}
-
-		// snake eats food
-		if (_snake.body_loc[0].x == _food.loc.x && _snake.body_loc[0].y == _food.loc.y) {
-			// map[_food.loc.x][_food.loc.y] = " ";
-			_food.loc.x = 1 + rand() % (_width -2);
-			_food.loc.y = 1 + rand() % (_height-2);
-			map[_food.loc.x][_food.loc.y] = _food.body;
-			_snake.length++;
-			_snake.body_loc[_snake.length-1].x = _snake.body_loc[_snake.length-2].x;
-			_snake.body_loc[_snake.length-1].y = _snake.body_loc[_snake.length-2].y;
-		}
+		}	
 
 		// update snake pieces: get the coordinates of the piece before (head is already updated)
-		for (int i = 1; i > _snake.length; i++) {
+		for (int i = _snake.length - 1; i >= 1; i--) {
 			_snake.body_loc[i].x = _snake.body_loc[i-1].x;
 			_snake.body_loc[i].y = _snake.body_loc[i-1].y;
-		} 		
+		} 	
 
 		/*
 		  n 
@@ -166,6 +156,17 @@ int main(int argc, char * argv []) {
 			stop = 1;
 		}
 
+		// snake eats food
+		if (_snake.body_loc[0].x == _food.loc.x && _snake.body_loc[0].y == _food.loc.y) {
+			// map[_food.loc.x][_food.loc.y] = " ";
+			_food.loc.x = 1 + rand() % (_width -2);
+			_food.loc.y = 1 + rand() % (_height-2);
+			map[_food.loc.x][_food.loc.y] = _food.body;
+			_snake.length++;
+			// _snake.body_loc[_snake.length-1].x = _snake.body_loc[_snake.length-2].x;
+			// _snake.body_loc[_snake.length-1].y = _snake.body_loc[_snake.length-2].y;
+		}
+
 		printf("length -> %d\n", _snake.length);
 		printf("snake direction -> %d\n", _snake.direction);
 		
@@ -177,12 +178,13 @@ int main(int argc, char * argv []) {
 				}
 			}
 		}
+		
 
 
 		// update map with snake body
 		for (int i = 0; i < _snake.length; i++) {
 			// map[_snake.body_loc[i].x][_snake.body_loc[i].y] = _snake.body;
-			printf("%d pezzo. x -> %d, y -> %d\n", i, _snake.body_loc[i].x, _snake.body_loc[i].y);
+			// printf("%d pezzo. x -> %d, y -> %d\n", i, _snake.body_loc[i].x, _snake.body_loc[i].y);
 			map[_snake.body_loc[i].x][_snake.body_loc[i].y] = _snake.body;
 		}	
 
